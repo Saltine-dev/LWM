@@ -1,0 +1,42 @@
+{
+  "name": "localworkshopmanager",
+  "version": "1.0.0",
+  "description": "Desktop app for managing Steam Workshop mods for non-Steam games",
+  "type": "module",
+  "main": "dist/main/main.js",
+  "electronmon": {
+    "patterns": ["!data/**"]
+  },
+  "scripts": {
+    "dev": "cross-env DEV_SERVER_PORT=5583 concurrently -k \"npm:dev:renderer\" \"npm:dev:main\"",
+    "dev:renderer": "cross-env NODE_ENV=development vite",
+    "dev:main": "node scripts/start-electron.js",
+    "build": "npm run clean && npm run build:main && npm run build:renderer",
+    "build:main": "node scripts/build-main.js",
+    "build:renderer": "cross-env NODE_ENV=production vite build",
+    "clean": "rimraf dist",
+    "lint": "echo 'Linting not yet configured'",
+    "start": "cross-env NODE_ENV=production electron ./dist/main/main.js",
+    "package": "npm run build && electron-builder"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-icons": "^5.2.1",
+    "bbcodejs": "^0.0.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.2",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "^39.0.0",
+    "electron-builder": "^26.0.12",
+    "electronmon": "^2.0.4",
+    "rimraf": "^5.0.10",
+    "vite": "^5.4.11",
+    "wait-on": "^9.0.1"
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "steamcmdPath": "",
+  "defaultInstallMode": "copy",
+  "concurrency": 1,
+  "enableUpdateChecks": true,
+  "appDataDir": "",
+  "gameProfiles": [
+    {
+      "id": "6174c501-34e5-47c7-9663-d2d03d313dbe",
+      "name": "Rimworld",
+      "appId": "294100",
+      "modPath": "G:\\TEST",
+      "steamcmdPath": "",
+      "installMode": "copy",
+      "lastSync": null,
+      "createdAt": "2025-11-01T19:01:14.120Z",
+      "updatedAt": "2025-11-01T19:01:14.120Z"
+    },
+    {
+      "id": "7c548c55-9896-40e2-a079-5b43acc437d3",
+      "name": "Rust",
+      "appId": "252490",
+      "modPath": "G:\\TEST",
+      "steamcmdPath": "",
+      "installMode": "copy",
+      "lastSync": null,
+      "createdAt": "2025-11-05T23:53:35.624Z",
+      "updatedAt": "2025-11-05T23:53:35.624Z"
+    },
+    {
+      "id": "10c65567-0850-4a3d-9b39-d182c9d5613f",
+      "name": "Hatred",
+      "appId": "341940",
+      "modPath": "G:\\TEST",
+      "steamcmdPath": "",
+      "installMode": "copy",
+      "lastSync": null,
+      "createdAt": "2025-11-05T23:54:41.075Z",
+      "updatedAt": "2025-11-05T23:54:41.075Z"
+    },
+    {
+      "id": "64c58ac2-3ba2-47c3-900b-7f576f0da0d0",
+      "name": "Unturned",
+      "appId": "304930",
+      "modPath": "G:\\TEST",
+      "steamcmdPath": "",
+      "installMode": "copy",
+      "lastSync": null,
+      "createdAt": "2025-11-05T23:55:18.218Z",
+      "updatedAt": "2025-11-05T23:55:18.218Z"
+    },
+    {
+      "id": "25fb2935-dd8c-45da-b706-d05020071843",
+      "name": "Wallpaper Engine",
+      "appId": "431960",
+      "modPath": "G:\\TEST",
+      "steamcmdPath": "",
+      "installMode": "copy",
+      "lastSync": null,
+      "createdAt": "2025-11-05T23:56:42.047Z",
+      "updatedAt": "2025-11-05T23:56:42.047Z"
+    },
+    {
+      "id": "c87f9801-3b23-4759-9fec-dd4b97f5c0cd",
+      "name": "Project Zomboid",
+      "appId": "108600",
+      "modPath": "G:\\TEST",
+      "steamcmdPath": "",
+      "installMode": "copy",
+      "lastSync": null,
+      "createdAt": "2025-11-05T23:57:47.680Z",
+      "updatedAt": "2025-11-05T23:57:47.680Z"
+    }
+  ],
+  "steamApiKey": ""
+}

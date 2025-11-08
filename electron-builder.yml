@@ -1,0 +1,27 @@
+appId: com.localworkshopmanager.app
+productName: Local Workshop Manager
+directories:
+  output: release
+  buildResources: build
+files:
+  - dist/**/*
+  - package.json
+extraResources:
+  - data/**/*
+  - Logo.ico
+  - Logo.icns
+asar: true
+win:
+  icon: Logo.ico
+  target:
+    - nsis
+mac:
+  category: public.app-category.utilities
+  icon: Logo.icns
+  target:
+    - dmg
+linux:
+  target:
+    - AppImage
+  category: Utility
+
