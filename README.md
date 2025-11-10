@@ -1,6 +1,6 @@
 # Local Workshop Manager
 
-Have you ever launched the non-Steam version of a Steam game and realised the Workshop is suddenly out of reach? You can still grab those mods, but only by slogging through SteamCMD, installing mods one by one, and dumping them into an ever-growing folder you can’t organise or keep current. Many developers ship across multiple platforms, yet only Steam enjoys that streamlined mod experience. Local Workshop Manager bridges that gap, bringing Workshop-quality mod discovery, collections, and updates to every copy, without the manual work.
+Have you ever launched the non-Steam version of a Steam game and realised theres suddenly no mod support? You can still grab workshop mods, but only by working through a SteamCMD console, installing mods one by one, and dumping them into an ever-growing folder you can’t organise or keep current. Many developers ship across multiple platforms, yet only Steam has that streamlined mod experience. Local Workshop Manager bridges that gap, bringing Workshop-quality mod discovery, collections, and updates to every copy, without the manual work.
 
 Local Workshop Manager is an Electron application that recreates the Steam Workshop experience for non-Steam games. It combines a React front end with a Node-powered backend to manage workshop downloads, organize profile-based collections, and keep your mod library in sync.
 
@@ -83,7 +83,13 @@ Local Workshop Manager is an Electron application that recreates the Steam Works
      }
      ```
 
-### 5. Click save and start browsing.
+### 3. Make a game profile. 
+
+1. Open the profile icon in the top right of the header. 
+2. Click new profile. 
+3. Input the profile name, the steam app id, and the location you want mods to install to. 
+4. Click "Create Profile" and start browsing.
+
 
 ---
 
@@ -95,4 +101,4 @@ Contributions are welcome! Feel free to open issues with feature requests or bug
 
 ## 📄 License
 
-MIT © Local Workshop Manager contributors. See `LICENSE` for details.
+MIT © Local Workshop Manager . See `LICENSE` for details.
