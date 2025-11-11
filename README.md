@@ -91,7 +91,7 @@ Have you ever launched the non-Steam version of a Steam game and realised the Wo
 
 ## 🚀 App Setup (Required)
 
-### 1. Install SteamCMD
+### 1. Install SteamCMD.
 
 1. Download SteamCMD for your platform: <https://developer.valvesoftware.com/wiki/SteamCMD>
 2. Extract it to a permanent folder, or the same folder as the app. 
@@ -103,7 +103,7 @@ Have you ever launched the non-Steam version of a Steam game and realised the Wo
    }
    ```
 
-### 2. Generate a Steam Web API Key
+### 2. Generate a Steam Web API Key.
 
 1. Visit <https://steamcommunity.com/dev/apikey>.
 2. Sign in with a Steam account.
@@ -117,7 +117,11 @@ Have you ever launched the non-Steam version of a Steam game and realised the Wo
      }
      ```
 
-### 5. Click save and start browsing.
+### 3. Configure a game profile. 
+
+1. Click the profile button in the top right of the header. 
+2. Input the game's info, including the name, steam app ID, and mod install location. 
+3. Click save changes and start browsing.
 
 ---
 
@@ -129,4 +133,4 @@ Contributions are welcome! Feel free to open issues with feature requests or bug
 
 ## 📄 License
 
-MIT © Local Workshop Manager contributors. See `LICENSE` for details.
+MIT © Local Workshop Manager. See `LICENSE` for details.
