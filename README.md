@@ -45,7 +45,8 @@ Have you ever launched the non-Steam version of a Steam game and realised the Wo
 
 ---
 
-## Screenshots 
+## Screenshots (Rimworld Example)
+
 <img width="2559" height="1389" alt="image" src="https://github.com/user-attachments/assets/5b6a9628-7a90-424c-9341-9c3d0879ad03" />
 <img width="2559" height="1387" alt="image" src="https://github.com/user-attachments/assets/bbdc79af-c08c-4f08-939c-f6584c2980ca" />
 <img width="2559" height="1388" alt="image" src="https://github.com/user-attachments/assets/f8e88b44-593a-4316-a4b2-3fc2692c757f" />
