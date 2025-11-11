@@ -2,9 +2,8 @@
 
 Have you ever launched the non-Steam version of a Steam game and realised the Workshop is suddenly out of reach? You can still grab those mods, but only by slogging through SteamCMD, installing mods one by one, and dumping them into an ever-growing folder you can’t organise or keep current. Many developers ship across multiple platforms, yet only Steam enjoys that streamlined mod experience. Local Workshop Manager bridges that gap, bringing Workshop-quality mod discovery, collections, and updates to every copy, without the manual work.
 
----
 
-## > ✨ Features
+## ✨ Features
 
 - **Home** – An Overview of the game's workshop page.
    - Quick tabs for Most Popular, Most Subscribed, and Most Recent mods. 
