@@ -4,15 +4,43 @@ Have you ever launched the non-Steam version of a Steam game and realised the Wo
 
 ---
 
-## ✨ Features
+## > ✨ Features
 
-- **Home** – Snapshot of the active profile's game with quick links into browsing, collection management, and some info about the game.
-- **Browse** –  Workshop-style catalog with search, filtering, and one-click installs powered by SteamCMD.
-- **Mod View** – Rich description view with media, requirements, install/uninstall controls, and dependencies.
-- **Collections** – Profile-scoped lists that support drag-and-drop ordering, inline renaming, mass install, and dependency-aware bulk actions.
-- **Manage Page** – Central hub to create, import/export, duplicate, or delete collections.
-- **Downloads Queue** – Real-time status of active SteamCMD jobs with toast notifications for success and failure.
-- **Profiles & Settings** – Switch between game setups, configure SteamCMD/API credentials, and tweak install defaults.
+- **Home** – An Overview of the game's workshop page.
+   - Quick tabs for Most Popular, Most Subscribed, and Most Recent mods. 
+   - A carousel with up and coming mods this week. 
+   - Mod tags to quickly sort by type. 
+   - Some info and links for the chosen game. 
+
+- **Browse** – Workshop-style catalog.
+   - One-click installs powered by SteamCMD.
+   - Filtering by type, timeframe, and tag. 
+   - Improved keyword searching, with link and ID support. 
+   - Page System
+
+- **Mod View** – Rich mod description view. 
+   - Thumbnail and screenshots with lighthouse view. 
+   - Mod controls for easy install, uninstall, and manage page redirect. 
+   - Mod Dependencies including other workshop items and DLC requirements.
+   - Original mod description with markdown support. 
+   - Mod comments with page system.
+   - Breadcrumbs to follow your mod trail. 
+   - General mod details and update log.
+
+- **Collections** – Profile-scoped modlists. 
+   - Bulk actions like install all, uninstall all, check all for updates. 
+   - Dependency check during mod install for other workshop item or DLC requirements.
+   - Import and export modlists made within LWM and share with your friends. 
+   - Import existing modlists from Steam. 
+
+- **Subscriptions** – Library of installed mods.
+   - Toast notifications for job success, faliure, start/end, updates, etc. 
+   - Download/update queue with status updates. 
+   - Info and quick links for every installed item. 
+
+- **Planned Features** - 
+   - Packaged Mac/Linux App 
+   - Improved collections page and management. 
 
 ---
 
