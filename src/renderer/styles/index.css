@@ -92,17 +92,6 @@ button {
   flex: 1;
 }
 
-.app-nav__search {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-}
-
-.app-nav__search-form {
-  max-width: 520px;
-  width: 100%;
-}
-
 .app-nav__actions {
   display: flex;
   align-items: center;

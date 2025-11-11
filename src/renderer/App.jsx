@@ -904,6 +904,7 @@ export default function App() {
   const [collectionAssignState, setCollectionAssignState] = useState({
     isOpen: false,
     mod: null,
+    mods: [],
     selectedIds: [],
     newName: '',
     error: '',
@@ -1005,6 +1006,12 @@ export default function App() {
   });
   const [breadcrumbs, setBreadcrumbs] = useState([]);
   const [originalPageState, setOriginalPageState] = useState(null);
+
+  const assignModalMods = Array.isArray(collectionAssignState.mods) && collectionAssignState.mods.length > 0
+    ? collectionAssignState.mods
+    : (collectionAssignState.mod ? [collectionAssignState.mod] : []);
+  const isBulkAssignModal = assignModalMods.length > 1;
+  const primaryAssignMod = assignModalMods[0] ?? null;
 
   useEffect(() => {
     const controls = getWindowControls();
@@ -4572,6 +4579,14 @@ useEffect(() => {
           </button>
           <button
             type="button"
+            className="steam-button secondary subscriptions-header__action"
+            onClick={handleAddAllSubscriptionsToCollection}
+            disabled={!subscriptionsForProfile.length}
+          >
+            Add All to Collection
+          </button>
+          <button
+            type="button"
             className="steam-button secondary subscriptions-header__action subscriptions-header__downloads"
             onClick={toggleDownloadsPanel}
             aria-expanded={isDownloadsPanelOpen}
@@ -4681,7 +4696,7 @@ useEffect(() => {
               <button
                 type="button"
                 className="steam-button steam-button--small"
-                onClick={() => handleDownloadMod(modShape, { silent: true, notify: true })}
+                onClick={() => handleCollectionInstallMod(collection, modShape, { silent: true, notify: true })}
                 disabled={isQueued}
               >
                 {isQueued ? 'Queued…' : 'Install'}
@@ -6043,16 +6058,22 @@ useEffect(() => {
     }
   }
 
-  function handleAddModToCollections(mod, targetCollectionIds) {
+  function handleAddModToCollections(mod, targetCollectionIds, options = {}) {
+    const { silent = false, skipActiveUpdate = false } = options ?? {};
+
     if (!mod) {
-      showToast('Unable to add to collection: missing mod information.', 'error');
-      return;
+      if (!silent) {
+        showToast('Unable to add to collection: missing mod information.', 'error');
+      }
+      return { assignedCount: 0, collectionIds: [] };
     }
 
     const entry = normalizeCollectionModEntry(mod);
     if (!entry) {
-      showToast('Unable to add to collection: invalid mod reference.', 'error');
-      return;
+      if (!silent) {
+        showToast('Unable to add to collection: invalid mod reference.', 'error');
+      }
+      return { assignedCount: 0, collectionIds: [] };
     }
 
     const idsArray = Array.isArray(targetCollectionIds) ? targetCollectionIds : [targetCollectionIds];
@@ -6071,8 +6092,10 @@ useEffect(() => {
       });
 
     if (!filteredIds.length) {
-      showToast('Select a collection to add this mod.', 'error');
-      return;
+      if (!silent) {
+        showToast('Select a collection to add this mod.', 'error');
+      }
+      return { assignedCount: 0, collectionIds: [] };
     }
 
     const idsSet = new Set(filteredIds);
@@ -6080,6 +6103,7 @@ useEffect(() => {
     const entryTags = Array.isArray(entry.tags) ? entry.tags : (Array.isArray(mod.tags) ? mod.tags : []);
     let affected = 0;
     const updatedCollectionTags = new Map();
+    const affectedCollectionIds = new Set();
 
     updateCollections((prev) => {
       let changed = false;
@@ -6126,6 +6150,7 @@ useEffect(() => {
           updatedCollectionTags.set(collection.id, updatedTags);
           changed = true;
           affected += 1;
+          affectedCollectionIds.add(collection.id);
           return {
             ...collection,
             mods: newMods,
@@ -6141,6 +6166,7 @@ useEffect(() => {
         updatedCollectionTags.set(collection.id, updatedTags);
         changed = true;
         affected += 1;
+        affectedCollectionIds.add(collection.id);
         return {
           ...collection,
           mods: newMods,
@@ -6164,11 +6190,106 @@ useEffect(() => {
     }
 
     if (affected > 0) {
-      setActiveCollectionId(filteredIds[0]);
-      showToast(`Added to ${affected} collection${affected === 1 ? '' : 's'}.`, 'success', { duration: 3500 });
-    } else {
+      if (!skipActiveUpdate) {
+        setActiveCollectionId(filteredIds[0]);
+      }
+      if (!silent) {
+        showToast(`Added to ${affected} collection${affected === 1 ? '' : 's'}.`, 'success', { duration: 3500 });
+      }
+    } else if (!silent) {
       showToast('This mod is already in the selected collections.', 'info');
     }
+
+    return {
+      assignedCount: affected,
+      collectionIds: Array.from(affectedCollectionIds),
+    };
+  }
+
+  async function handleCollectionInstallMod(collection, modShape, options = { silent: true, notify: true }) {
+    if (!collection || !modShape?.modId) {
+      return;
+    }
+
+    const collectionEntries = Array.isArray(collection.mods) ? collection.mods : [];
+    const collectionModIds = new Set(
+      collectionEntries
+        .map((entry) => (entry?.modId ? String(entry.modId) : null))
+        .filter((value) => value),
+    );
+
+    const modId = String(modShape.modId);
+    let requirements = [];
+
+    const record = modRecordsById.get(modId);
+    if (Array.isArray(record?.requirements) && record.requirements.length > 0) {
+      requirements = record.requirements;
+    } else {
+      try {
+        const detail = await safeInvoke('steam:fetch-mod-details', {
+          modId,
+          appId: selectedProfile?.appId ?? config?.defaultAppId ?? null,
+        });
+
+        if (Array.isArray(detail?.requirements) && detail.requirements.length > 0) {
+          requirements = detail.requirements;
+        }
+      } catch (error) {
+        console.warn(`Failed to fetch requirements for mod ${modId}`, error);
+      }
+    }
+
+    if (!Array.isArray(requirements) || requirements.length === 0) {
+      handleDownloadMod(modShape, options);
+      return;
+    }
+
+    const missing = [];
+    const installed = [];
+
+    requirements.forEach((requirement) => {
+      if (!requirement || requirement.kind !== 'workshop' || !requirement.modId) {
+        return;
+      }
+
+      const requirementId = String(requirement.modId);
+
+      if (collectionModIds.has(requirementId)) {
+        return;
+      }
+
+      const requirementRecord = modRecordsById.get(requirementId);
+      const requirementJob = downloadJobByModId.get(requirementId);
+      const isInstalled = Boolean(requirementRecord?.installedPath) || requirementRecord?.status === 'installed';
+
+      if (isInstalled) {
+        installed.push({
+          requirement,
+          record: requirementRecord ?? null,
+          job: requirementJob ?? null,
+        });
+        return;
+      }
+
+      missing.push({
+        requirement,
+        record: requirementRecord ?? null,
+        job: requirementJob ?? null,
+      });
+    });
+
+    if (missing.length > 0) {
+      setDependencyPromptState({
+        isOpen: true,
+        mod: modShape,
+        missing,
+        installed,
+        options,
+      });
+      return;
+    }
+
+    handleDownloadMod(modShape, options);
   }
 
   async function handleCollectionInstallAll(collection) {
@@ -6390,7 +6511,38 @@ useEffect(() => {
     setCollectionAssignState({
       isOpen: true,
       mod: modShape,
+      mods: modShape ? [modShape] : [],
       selectedIds: getCollectionIdsContainingMod(entry.modId),
+      newName: '',
+      error: '',
+    });
+  }
+
+  function openCollectionBulkAssignModal(modShapes) {
+    const shapes = Array.isArray(modShapes) ? modShapes.filter((item) => item && item.modId) : [];
+
+    if (!shapes.length) {
+      showToast('No mods are available to add.', 'info');
+      return;
+    }
+
+    const deduped = [];
+    const seen = new Set();
+
+    shapes.forEach((shape) => {
+      const id = String(shape.modId);
+      if (seen.has(id)) {
+        return;
+      }
+      seen.add(id);
+      deduped.push(shape);
+    });
+
+    setCollectionAssignState({
+      isOpen: true,
+      mod: deduped.length === 1 ? deduped[0] : null,
+      mods: deduped,
+      selectedIds: [],
       newName: '',
       error: '',
     });
@@ -6400,10 +6552,34 @@ useEffect(() => {
     setCollectionAssignState({
       isOpen: false,
       mod: null,
+      mods: [],
       selectedIds: [],
       newName: '',
       error: '',
     });
+  }
+
+  function handleAddAllSubscriptionsToCollection() {
+    if (!selectedProfileId) {
+      showToast('Select a profile before managing collections.', 'error');
+      return;
+    }
+
+    if (!subscriptionsForProfile.length) {
+      showToast('No installed mods available to add.', 'info');
+      return;
+    }
+
+    const modShapes = subscriptionsForProfile
+      .map((record) => createModShapeFromRecord(record))
+      .filter((modShape) => modShape && modShape.modId);
+
+    if (!modShapes.length) {
+      showToast('Unable to prepare subscriptions for adding to a collection.', 'error');
+      return;
+    }
+
+    openCollectionBulkAssignModal(modShapes);
   }
 
   function handleCollectionAssignToggle(collectionId) {
@@ -6425,9 +6601,12 @@ useEffect(() => {
   }
 
   function handleCollectionAssignSubmit() {
-    const { mod, selectedIds, newName } = collectionAssignState;
+    const { selectedIds, newName } = collectionAssignState;
+    const mods = Array.isArray(collectionAssignState.mods) && collectionAssignState.mods.length > 0
+      ? collectionAssignState.mods
+      : (collectionAssignState.mod ? [collectionAssignState.mod] : []);
 
-    if (!mod) {
+    if (!mods.length) {
       return;
     }
 
@@ -6450,8 +6629,58 @@ useEffect(() => {
       pendingIds.add(createdId);
     }
 
-    handleAddModToCollections(mod, Array.from(pendingIds));
-    if (createdId) {
+    const targetIds = Array.from(pendingIds);
+
+    const isBulk = mods.length > 1;
+    let bulkAssignedCount = 0;
+    const bulkAffectedCollections = new Set();
+
+    if (isBulk) {
+      const deduped = [];
+      const seen = new Set();
+
+      mods.forEach((modShape) => {
+        if (!modShape?.modId) {
+          return;
+        }
+        const id = String(modShape.modId);
+        if (seen.has(id)) {
+          return;
+        }
+        seen.add(id);
+        deduped.push(modShape);
+      });
+
+      deduped.forEach((modShape) => {
+        const result = handleAddModToCollections(modShape, targetIds, { silent: true, skipActiveUpdate: true });
+        if (result?.assignedCount) {
+          bulkAssignedCount += result.assignedCount;
+        }
+        if (Array.isArray(result?.collectionIds)) {
+          result.collectionIds.forEach((id) => bulkAffectedCollections.add(id));
+        }
+      });
+
+      if (bulkAssignedCount > 0) {
+        const collectionCount = bulkAffectedCollections.size || targetIds.length;
+        const modLabel = bulkAssignedCount === 1 ? 'mod' : 'mods';
+        const collectionLabel = collectionCount === 1 ? 'collection' : 'collections';
+        const targetCollectionId = createdId ?? targetIds[0] ?? null;
+        if (targetCollectionId) {
+          setActiveCollectionId(targetCollectionId);
+        }
+        showToast(`Added ${bulkAssignedCount} ${modLabel} to ${collectionCount} ${collectionLabel}.`, 'success', {
+          duration: 4000,
+        });
+      } else if (!trimmedName) {
+        showToast('These mods are already in the selected collections.', 'info');
+      }
+    } else {
+      const [singleMod] = mods;
+      handleAddModToCollections(singleMod, targetIds);
+    }
+
+    if (createdId && bulkAssignedCount === 0 && targetIds.length > 0) {
       setActiveCollectionId(createdId);
     }
 
@@ -6655,32 +6884,12 @@ useEffect(() => {
         )}
 
         <div className="app-nav__row">
-        <div className="app-nav__brand">
-          <FaFolderOpen aria-hidden="true" className="app-nav__brand-icon" />
-          <span className="app-nav__brand-text">WORKSHOP MANAGER</span>
-        </div>
-        {activeView === 'browse' ? (
-          <div className="app-nav__search">
-            <form className="search-form app-nav__search-form" onSubmit={handleSearchSubmit}>
-              <input
-                type="search"
-                className="steam-input search-form__input"
-                placeholder="Search workshop by keyword, ID, or link"
-                aria-label="Search workshop"
-                autoComplete="off"
-                value={browseSearchInput}
-                onChange={handleSearchInputChange}
-              />
-              <button type="submit" className="steam-button search-form__button">
-                <FaSearch aria-hidden="true" />
-                <span>Search</span>
-              </button>
-            </form>
+          <div className="app-nav__brand">
+            <FaFolderOpen aria-hidden="true" className="app-nav__brand-icon" />
+            <span className="app-nav__brand-text">WORKSHOP MANAGER</span>
           </div>
-        ) : (
           <div className="app-nav__spacer" />
-        )}
-        <div className="app-nav__actions">
+          <div className="app-nav__actions">
           <select
             className="steam-input steam-input--select"
             value={selectedProfileId ?? ''}
@@ -6858,7 +7067,9 @@ useEffect(() => {
               <div>
                 <div style={{ fontSize: 18, fontWeight: 600 }}>Add to Collections</div>
                 <div style={{ fontSize: 13, opacity: 0.7 }}>
-                  Select one or more collections for {collectionAssignState.mod?.title || collectionAssignState.mod?.modId || 'this mod'}.
+                  Select one or more collections for {isBulkAssignModal
+                    ? `${assignModalMods.length} mods`
+                    : (primaryAssignMod?.title || primaryAssignMod?.modId || 'this mod')}.
                 </div>
               </div>
               <button type="button" className="modal-close-button" onClick={closeCollectionAssignModal} aria-label="Close">
@@ -6867,11 +7078,31 @@ useEffect(() => {
             </div>
             <div className="collection-assign-modal__body">
               <div className="collection-assign-modal__summary">
-                <div className="collection-assign-modal__title">{collectionAssignState.mod?.title || collectionAssignState.mod?.modId}</div>
-                <div className="collection-assign-modal__meta">
-                  <span>Mod ID: {collectionAssignState.mod?.modId}</span>
-                  {collectionAssignState.mod?.author && <span>By {collectionAssignState.mod.author}</span>}
-                </div>
+                {isBulkAssignModal ? (
+                  <>
+                    <div className="collection-assign-modal__title">Add {assignModalMods.length} Mods</div>
+                    <div className="collection-assign-modal__meta">
+                      <span>
+                        {assignModalMods.slice(0, 3).map((mod, index) => {
+                          const title = mod?.title || mod?.modId;
+                          if (index === 0) {
+                            return title;
+                          }
+                          return `, ${title}`;
+                        })}
+                        {assignModalMods.length > 3 ? `, +${assignModalMods.length - 3} more` : ''}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="collection-assign-modal__title">{primaryAssignMod?.title || primaryAssignMod?.modId}</div>
+                    <div className="collection-assign-modal__meta">
+                      <span>Mod ID: {primaryAssignMod?.modId}</span>
+                      {primaryAssignMod?.author && <span>By {primaryAssignMod.author}</span>}
+                    </div>
+                  </>
+                )}
               </div>
               <div className="collection-assign-modal__list">
                 {collections.length === 0 ? (
@@ -6916,6 +7147,84 @@ useEffect(() => {
               </button>
               <button type="button" className="steam-button secondary" onClick={closeCollectionAssignModal}>
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {dependencyPromptState.isOpen && (
+        <div className="dependency-modal-overlay" role="dialog" aria-modal="true">
+          <div className="dependency-modal">
+            <div className="dependency-modal__header">
+              <h3>Install Required Mods?</h3>
+              <button
+                type="button"
+                className="dependency-modal__close"
+                onClick={() => handleDependencyDecision('cancel')}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+            <div className="dependency-modal__content">
+              <p>
+                {dependencyPromptState.mod?.title
+                  ? `"${dependencyPromptState.mod.title}" requires additional workshop items.`
+                  : 'This workshop item requires additional mods.'}{' '}
+                Choose how you want to continue.
+              </p>
+              {dependencyPromptState.missing.length > 0 && (
+                <div className="dependency-modal__list dependency-modal__list--missing">
+                  <div className="dependency-modal__list-title">Missing Requirements</div>
+                  <ul>
+                    {dependencyPromptState.missing.slice(0, 6).map((entry, index) => {
+                      const requirement = entry?.requirement ?? null;
+                      const key = requirement?.modId ?? `missing-${index}`;
+                      const label = requirement?.title || requirement?.modId || 'Unknown mod';
+                      return <li key={`dependency-missing-${key}`}>{label}</li>;
+                    })}
+                    {dependencyPromptState.missing.length > 6 && (
+                      <li key="dependency-missing-more">
+                        +{dependencyPromptState.missing.length - 6} more
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              )}
+              {dependencyPromptState.installed.length > 0 && (
+                <div className="dependency-modal__list dependency-modal__list--installed">
+                  <div className="dependency-modal__list-title">Already Installed</div>
+                  <ul>
+                    {dependencyPromptState.installed.slice(0, 6).map((entry, index) => {
+                      const requirement = entry?.requirement ?? null;
+                      const key = requirement?.modId ?? `installed-${index}`;
+                      const label = requirement?.title || requirement?.modId || 'Unknown mod';
+                      return <li key={`dependency-installed-${key}`}>{label}</li>;
+                    })}
+                    {dependencyPromptState.installed.length > 6 && (
+                      <li key="dependency-installed-more">
+                        +{dependencyPromptState.installed.length - 6} more
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              )}
+            </div>
+            <div className="dependency-modal__actions">
+              <button
+                type="button"
+                className="steam-button"
+                onClick={() => handleDependencyDecision('with-dependencies')}
+              >
+                Install with Required Mods
+              </button>
+              <button
+                type="button"
+                className="steam-button secondary"
+                onClick={() => handleDependencyDecision('without-dependencies')}
+              >
+                Install Only This Mod
               </button>
             </div>
           </div>
@@ -7010,13 +7319,6 @@ useEffect(() => {
                 onClick={() => handleCollectionDependencyDecision('collection-only')}
               >
                 Install Collection Only
-              </button>
-              <button
-                type="button"
-                className="steam-button secondary"
-                onClick={() => handleCollectionDependencyDecision('cancel')}
-              >
-                Cancel
               </button>
             </div>
           </div>
