@@ -2,8 +2,6 @@
 
 Have you ever launched the non-Steam version of a Steam game and realised the Workshop is suddenly out of reach? You can still grab those mods, but only by slogging through SteamCMD, installing mods one by one, and dumping them into an ever-growing folder you can’t organise or keep current. Many developers ship across multiple platforms, yet only Steam enjoys that streamlined mod experience. Local Workshop Manager bridges that gap, bringing Workshop-quality mod discovery, collections, and updates to every copy, without the manual work.
 
-Local Workshop Manager is an Electron application that recreates the Steam Workshop experience for non-Steam games. It combines a React front end with a Node-powered backend to manage workshop downloads, organize profile-based collections, and keep your mod library in sync.
-
 ---
 
 ## ✨ Features
@@ -19,6 +17,12 @@ Local Workshop Manager is an Electron application that recreates the Steam Works
 ---
 
 ## Screenshots 
+<img width="2559" height="1389" alt="image" src="https://github.com/user-attachments/assets/5b6a9628-7a90-424c-9341-9c3d0879ad03" />
+<img width="2559" height="1387" alt="image" src="https://github.com/user-attachments/assets/bbdc79af-c08c-4f08-939c-f6584c2980ca" />
+<img width="2559" height="1388" alt="image" src="https://github.com/user-attachments/assets/f8e88b44-593a-4316-a4b2-3fc2692c757f" />
+<img width="2559" height="1386" alt="image" src="https://github.com/user-attachments/assets/3a414e12-ba51-4d4b-805f-c676c293099f" />
+<img width="2559" height="1385" alt="image" src="https://github.com/user-attachments/assets/95679f9e-6556-406a-aaea-3b0f39212698" />
+<img width="2559" height="1387" alt="image" src="https://github.com/user-attachments/assets/0360c036-dea6-4c24-b86b-fefada008070" />
 
 ---
 
