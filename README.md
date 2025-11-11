@@ -1,4 +1,4 @@
-# LWM / Local Workshop Manager
+<p align="center"> # LWM / Local Workshop Manager </p
 
 <img width="1024" height="1024" alt="Logo" src="https://github.com/user-attachments/assets/b1ac2b36-443a-4c77-8a74-4f83e64cf0bd" />
 
