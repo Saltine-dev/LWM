@@ -42,7 +42,8 @@ Have you ever launched the non-Steam version of a Steam game and realised the th
 
 - **Planned Features** - 
    - Packaged Mac/Linux App 
-   - Improved collections page and management. 
+   - Improved collections page and mod management. 
+   - Load Order Management for select games.
 
 ---
 
